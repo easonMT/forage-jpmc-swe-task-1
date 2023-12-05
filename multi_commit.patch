@@ -1,0 +1,109 @@
+From 36f2b603b7888e70376273da64efce0a737caf13 Mon Sep 17 00:00:00 2001
+From: easonMT <t.eason@lafilm.edu>
+Date: Tue, 5 Dec 2023 08:08:27 -0500
+Subject: [PATCH 1/3] added datapoint to workspace settings.
+
+---
+ .vscode/settings.json | 3 +++
+ 1 file changed, 3 insertions(+)
+ create mode 100644 .vscode/settings.json
+
+diff --git a/.vscode/settings.json b/.vscode/settings.json
+new file mode 100644
+index 0000000..229bcd8
+--- /dev/null
++++ b/.vscode/settings.json
+@@ -0,0 +1,3 @@
++{
++  "cSpell.words": ["datapoint"]
++}
+-- 
+2.42.1
+
+
+From 39694bd5ca81f51e0c0041c513d4527b6557d17c Mon Sep 17 00:00:00 2001
+From: easonMT <t.eason@lafilm.edu>
+Date: Tue, 5 Dec 2023 08:09:59 -0500
+Subject: [PATCH 2/3] add unit test for getRation function
+
+---
+ client_test.py | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/client_test.py b/client_test.py
+index af2bf26..7446b85 100644
+--- a/client_test.py
++++ b/client_test.py
+@@ -1,5 +1,5 @@
+ import unittest
+-from client3 import getDataPoint
++from client3 import getDataPoint, getRatio
+ 
+ class ClientTest(unittest.TestCase):
+   def test_getDataPoint_calculatePrice(self):
+@@ -19,6 +19,14 @@ class ClientTest(unittest.TestCase):
+ 
+   """ ------------ Add more unit tests ------------ """
+ 
++  def test_getRatio(self):
++    # price_b is not 0
++    ratio = getRatio(10.0, 5.0)
++    self.assertEqual(ratio, 2.0)
++
++    ratio = getRatio(10.0, 0.0)
++    self.assertIsNone(ratio)
++
+ 
+ 
+ if __name__ == '__main__':
+-- 
+2.42.1
+
+
+From f6be0e7ec7a9e89b840454621397a5808a6d3cdd Mon Sep 17 00:00:00 2001
+From: easonMT <t.eason@lafilm.edu>
+Date: Tue, 5 Dec 2023 08:12:27 -0500
+Subject: [PATCH 3/3] modified getDataPoint me\thod to compute the right stock
+ price. modified the getRation method to return the value of stock ratio
+
+---
+ client3.py | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/client3.py b/client3.py
+index 3fc09b7..e9452a9 100644
+--- a/client3.py
++++ b/client3.py
+@@ -35,14 +35,16 @@ def getDataPoint(quote):
+     stock = quote['stock']
+     bid_price = float(quote['top_bid']['price'])
+     ask_price = float(quote['top_ask']['price'])
+-    price = bid_price
++    price = (bid_price + ask_price)/2
+     return stock, bid_price, ask_price, price
+ 
+ 
+ def getRatio(price_a, price_b):
+     """ Get ratio of price_a and price_b """
+     """ ------------- Update this function ------------- """
+-    return 1
++    if (price_b == 0):
++        return
++    return price_a/price_b
+ 
+ 
+ # Main
+@@ -52,8 +54,10 @@ if __name__ == "__main__":
+         quotes = json.loads(urllib.request.urlopen(QUERY.format(random.random())).read())
+ 
+         """ ----------- Update to get the ratio --------------- """
++        prices = {}
+         for quote in quotes:
+             stock, bid_price, ask_price, price = getDataPoint(quote)
++            prices[stock] = price
+             print("Quoted %s at (bid:%s, ask:%s, price:%s)" % (stock, bid_price, ask_price, price))
+ 
+         print("Ratio %s" % getRatio(price, price))
+-- 
+2.42.1
+
